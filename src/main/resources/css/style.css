@@ -1,0 +1,105 @@
+.root-pane {
+    -fx-background-color: #f4f6f8;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 2);
+}
+
+.topbar {
+    -fx-background-color: #1f2937;
+}
+.topbar .label { -fx-text-fill: white; }
+.topbar .app-title { -fx-text-fill: white; }
+
+.app-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.subtitle {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 13px;
+}
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.error-text {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+}
+
+.btn-primary {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 10 18 10 18;
+}
+.btn-primary:hover { -fx-background-color: #1d4ed8; }
+.btn-primary:disabled { -fx-opacity: 0.5; }
+
+.btn-secondary {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #111827;
+    -fx-background-radius: 6;
+    -fx-padding: 10 18 10 18;
+}
+.btn-secondary:hover { -fx-background-color: #d1d5db; }
+
+.btn-danger {
+    -fx-background-color: #dc2626;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 10 18 10 18;
+}
+.btn-danger:hover { -fx-background-color: #b91c1c; }
+.btn-danger:disabled { -fx-opacity: 0.5; }
+
+.btn-menu {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #111827;
+    -fx-font-size: 14px;
+    -fx-background-radius: 6;
+    -fx-padding: 14 18 14 18;
+    -fx-alignment: CENTER_LEFT;
+}
+.btn-menu:hover { -fx-background-color: #e5e7eb; }
+.btn-menu:disabled { -fx-opacity: 0.4; }
+
+.btn-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: #93c5fd;
+    -fx-underline: false;
+}
+.btn-link:hover { -fx-text-fill: white; }
+
+.badge {
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.badge-open {
+    -fx-background-color: #16a34a;
+    -fx-text-fill: white;
+}
+.badge-closed {
+    -fx-background-color: #6b7280;
+    -fx-text-fill: white;
+}
+
+.info-panel {
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 8;
+    -fx-padding: 16;
+}

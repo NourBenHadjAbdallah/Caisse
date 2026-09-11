@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.MainMenuController"
+            styleClass="root-pane" prefWidth="560" prefHeight="480">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Label text="MENU PRINCIPAL" styleClass="app-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="cashierLabel" styleClass="subtitle"/>
+            <Label fx:id="journeyBadge" styleClass="badge"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="14" styleClass="card">
+            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+            <Button text="Journée" maxWidth="Infinity" styleClass="btn-menu" onAction="#onJourney"/>
+            <Button fx:id="ticketsButton" text="Tickets" maxWidth="Infinity" styleClass="btn-menu" onAction="#onTickets"/>
+            <Button fx:id="returnsButton" text="Retours" maxWidth="Infinity" styleClass="btn-menu" onAction="#onReturns"/>
+            <Button text="Stock" maxWidth="Infinity" styleClass="btn-menu" onAction="#onStock"/>
+            <Button text="Rapports" maxWidth="Infinity" styleClass="btn-menu" onAction="#onReports"/>
+            <Separator/>
+            <Button text="Déconnexion" maxWidth="Infinity" styleClass="btn-secondary" onAction="#onLogout"/>
+        </VBox>
+    </center>
+</BorderPane>

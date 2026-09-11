@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.StockController"
+            styleClass="root-pane" prefWidth="720" prefHeight="560">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
+            <Label text="STOCK" styleClass="app-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="12">
+            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+            <HBox spacing="10">
+                <TextField fx:id="searchField" promptText="Rechercher un produit (code ou libellé)" onAction="#onSearch" HBox.hgrow="ALWAYS"/>
+                <Button text="Rechercher" onAction="#onSearch"/>
+                <Button text="Tout afficher" onAction="#onListAll"/>
+            </HBox>
+
+            <TableView fx:id="stockTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colCode" text="Code" prefWidth="100"/>
+                    <TableColumn fx:id="colLabel" text="Libellé" prefWidth="220"/>
+                    <TableColumn fx:id="colStock" text="Stock" prefWidth="80"/>
+                    <TableColumn fx:id="colNormalPrice" text="Prix normal" prefWidth="110"/>
+                    <TableColumn fx:id="colDiscount" text="Remise %" prefWidth="90"/>
+                    <TableColumn fx:id="colFinalPrice" text="Prix final" prefWidth="110"/>
+                </columns>
+            </TableView>
+
+            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+        </VBox>
+    </center>
+</BorderPane>

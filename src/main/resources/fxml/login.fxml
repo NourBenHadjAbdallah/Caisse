@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.caisse.controller.LoginController"
+           styleClass="root-pane" prefWidth="480" prefHeight="420">
+    <VBox alignment="CENTER" spacing="14" maxWidth="340" styleClass="card">
+        <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+        <Label text="CAISSE" styleClass="app-title"/>
+        <Label text="Connexion caissier" styleClass="subtitle"/>
+
+        <VBox spacing="6">
+            <Label text="Email"/>
+            <TextField fx:id="emailField" promptText="votre.email@exemple.com"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="Mot de passe"/>
+            <PasswordField fx:id="passwordField" promptText="••••••••" onAction="#onLogin"/>
+        </VBox>
+
+        <Button text="Se connecter" defaultButton="true" maxWidth="Infinity" styleClass="btn-primary" onAction="#onLogin"/>
+
+        <Label fx:id="statusLabel" styleClass="error-text" wrapText="true"/>
+        <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+    </VBox>
+</StackPane>

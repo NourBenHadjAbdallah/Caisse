@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.TicketController"
+            styleClass="root-pane" prefWidth="800" prefHeight="600">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
+            <Label text="TICKETS" styleClass="app-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="journeyLabel" styleClass="subtitle"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="12">
+            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="codeField" promptText="Scanner / saisir le code produit" onAction="#onAddByCode" HBox.hgrow="ALWAYS"/>
+                <Button text="Rechercher" onAction="#onSearch"/>
+            </HBox>
+
+            <ListView fx:id="searchResults" prefHeight="120" visible="false" managed="false"/>
+
+            <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colCode" text="Code" prefWidth="90"/>
+                    <TableColumn fx:id="colLabel" text="Article" prefWidth="220"/>
+                    <TableColumn fx:id="colQty" text="Qté" prefWidth="70"/>
+                    <TableColumn fx:id="colPrice" text="Prix unitaire" prefWidth="110"/>
+                    <TableColumn fx:id="colDiscount" text="Remise %" prefWidth="90"/>
+                    <TableColumn fx:id="colTotal" text="Total ligne" prefWidth="110"/>
+                    <TableColumn fx:id="colRemove" text="" prefWidth="80"/>
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Label text="Total ticket:" styleClass="section-title"/>
+                <Label fx:id="totalLabel" styleClass="section-title"/>
+            </HBox>
+
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Label text="Paiement:"/>
+                <ToggleButton fx:id="cashToggle" text="Espèces" selected="true"/>
+                <ToggleButton fx:id="cardToggle" text="Carte bancaire"/>
+                <Button text="Valider le ticket" styleClass="btn-primary" onAction="#onValidate"/>
+            </HBox>
+
+            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.JourneyMenuController"
+            styleClass="root-pane" prefWidth="560" prefHeight="480">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
+            <Label text="JOURNÉE" styleClass="app-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="18" styleClass="card">
+            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+            <HBox spacing="14" alignment="CENTER">
+                <Button fx:id="openButton" text="Ouvrir Journée" styleClass="btn-primary" prefWidth="200" onAction="#onOpenJourney"/>
+                <Button fx:id="closeButton" text="Fermer Journée" styleClass="btn-danger" prefWidth="200" onAction="#onCloseJourney"/>
+            </HBox>
+
+            <Separator/>
+
+            <VBox fx:id="currentJourneyPanel" spacing="8" styleClass="info-panel" managed="false" visible="false">
+                <Label text="Journée en cours" styleClass="section-title"/>
+                <Label fx:id="idLabel"/>
+                <Label fx:id="cashierLabel"/>
+                <Label fx:id="openedLabel"/>
+                <Label fx:id="statusLabel"/>
+            </VBox>
+
+            <Label fx:id="emptyLabel" text="Aucune journée en cours." styleClass="subtitle"/>
+
+            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+        </VBox>
+    </center>
+</BorderPane>

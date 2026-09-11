@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.ReturnController"
+            styleClass="root-pane" prefWidth="760" prefHeight="580">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
+            <Label text="RETOURS" styleClass="app-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="12">
+            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="ticketIdField" promptText="Numéro de ticket" onAction="#onLookup" HBox.hgrow="ALWAYS"/>
+                <Button text="Rechercher le ticket" onAction="#onLookup"/>
+            </HBox>
+
+            <Label fx:id="originalTicketLabel" styleClass="section-title"/>
+
+            <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colCode" text="Code" prefWidth="90"/>
+                    <TableColumn fx:id="colLabel" text="Article" prefWidth="220"/>
+                    <TableColumn fx:id="colSold" text="Qté vendue" prefWidth="90"/>
+                    <TableColumn fx:id="colReturnQty" text="Qté à retourner" prefWidth="130"/>
+                    <TableColumn fx:id="colUnitPrice" text="Prix unitaire" prefWidth="110"/>
+                    <TableColumn fx:id="colRefund" text="Remboursement" prefWidth="120"/>
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Label text="Total à rembourser:" styleClass="section-title"/>
+                <Label fx:id="totalLabel" styleClass="section-title"/>
+            </HBox>
+
+            <HBox alignment="CENTER_RIGHT">
+                <Button text="Confirmer le retour" styleClass="btn-primary" onAction="#onConfirmReturn"/>
+            </HBox>
+
+            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+        </VBox>
+    </center>
+</BorderPane>

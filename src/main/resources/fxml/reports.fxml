@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.caisse.controller.ReportController"
+            styleClass="root-pane" prefWidth="640" prefHeight="600">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
+            <Label text="RAPPORTS" styleClass="app-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="14" styleClass="card">
+            <padding><Insets top="24" right="30" bottom="24" left="30"/></padding>
+
+            <HBox spacing="10">
+                <ComboBox fx:id="quickRangeCombo" promptText="Période"/>
+                <DatePicker fx:id="fromPicker" promptText="Du"/>
+                <DatePicker fx:id="toPicker" promptText="Au"/>
+            </HBox>
+            <HBox spacing="10">
+                <TextField fx:id="cashierField" promptText="Filtrer par caissier (code)"/>
+                <ComboBox fx:id="paymentCombo" promptText="Mode de paiement"/>
+                <Button text="Générer" styleClass="btn-primary" onAction="#onGenerate"/>
+            </HBox>
+
+            <Separator/>
+
+            <GridPane hgap="16" vgap="10">
+                <Label text="Ventes totales:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label fx:id="totalSalesLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Nombre de tickets:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="ticketCountLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Ventes espèces:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label fx:id="cashSalesLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Ventes carte:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label fx:id="cardSalesLabel" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Retours:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <Label fx:id="returnsLabel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Ventes nettes:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <Label fx:id="netSalesLabel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                <Label text="Produits vendus:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <Label fx:id="productsSoldLabel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                <Label text="Produits retournés:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <Label fx:id="productsReturnedLabel" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
+        </VBox>
+    </center>
+</BorderPane>
