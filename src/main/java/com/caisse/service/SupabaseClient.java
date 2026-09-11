@@ -12,28 +12,40 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 
-/**
- * Thin wrapper around Supabase's REST (PostgREST) and Auth (GoTrue) HTTP APIs.
- * Every request carries the anon key as "apikey" and, once signed in, the
- * user's access token as the Bearer "Authorization" header so that Postgres
- * Row Level Security policies apply per-user.
- */
 public class SupabaseClient {
 
     private static final SupabaseClient INSTANCE = new SupabaseClient();
-    public static SupabaseClient getInstance() { return INSTANCE; }
+
+    public static SupabaseClient getInstance() {
+        return INSTANCE;
+    }
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    private final String baseUrl = AppConfig.supabaseUrl();
-    private final String anonKey = AppConfig.supabaseAnonKey();
+    private final String baseUrl;
+    private final String anonKey;
 
-    private String accessToken;   // set after successful login
-    private String currentUserId; // Supabase auth user id (uuid)
+    private String accessToken;
+    private String currentUserId;
 
-    private SupabaseClient() {}
+    private SupabaseClient() {
+        baseUrl = AppConfig.supabaseUrl();
+        anonKey = AppConfig.supabaseAnonKey();
+
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new IllegalStateException("Supabase URL is missing.");
+        }
+
+        if (anonKey == null || anonKey.isBlank()) {
+            throw new IllegalStateException("Supabase anon key is missing.");
+        }
+    }
+
+    // ============================================================
+    // SESSION
+    // ============================================================
 
     public void setSession(String accessToken, String userId) {
         this.accessToken = accessToken;
@@ -45,107 +57,363 @@ public class SupabaseClient {
         this.currentUserId = null;
     }
 
-    public String currentUserId() { return currentUserId; }
-    public boolean isAuthenticated() { return accessToken != null; }
+    public String currentUserId() {
+        return currentUserId;
+    }
 
-    // ---------------------------------------------------------------
-    // Auth (GoTrue) — email/password sign in
-    // ---------------------------------------------------------------
+    public boolean isAuthenticated() {
+        return accessToken != null && !accessToken.isBlank();
+    }
 
-    /** Returns the raw auth response JSON (contains access_token, user, etc.). */
-    public JSONObject signInWithPassword(String email, String password) throws IOException, InterruptedException {
-        JSONObject body = new JSONObject().put("email", email).put("password", password);
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/auth/v1/token?grant_type=password"))
+    // ============================================================
+    // AUTHENTICATION
+    // ============================================================
+
+    public JSONObject signInWithPassword(String email, String password)
+            throws IOException, InterruptedException {
+
+        if (email == null || email.isBlank()) {
+            throw new IOException("Veuillez saisir votre adresse e-mail.");
+        }
+
+        if (password == null || password.isBlank()) {
+            throw new IOException("Veuillez saisir votre mot de passe.");
+        }
+
+        email = email.trim();
+
+        JSONObject body = new JSONObject()
+                .put("email", email)
+                .put("password", password);
+
+        String url = baseUrl + "/auth/v1/token?grant_type=password";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(15))
                 .header("apikey", anonKey)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                 .build();
-        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-        JSONObject json = new JSONObject(resp.body());
-        if (resp.statusCode() >= 400) {
-            String msg = json.optString("error_description", json.optString("msg", "Échec de connexion"));
-            throw new IOException(msg);
+
+        HttpResponse<String> response =
+                http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        String responseBody = response.body();
+
+        System.out.println("Supabase Auth status: " + response.statusCode());
+        System.out.println("Supabase Auth response: " + responseBody);
+
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+
+            String message = extractSupabaseError(responseBody);
+
+            throw new IOException(
+                    "Échec de connexion : " + message
+            );
         }
+
+        if (responseBody == null || responseBody.isBlank()) {
+            throw new IOException(
+                    "Supabase a retourné une réponse vide."
+            );
+        }
+
+        JSONObject json;
+
+        try {
+            json = new JSONObject(responseBody);
+        } catch (Exception e) {
+            throw new IOException(
+                    "Réponse Supabase invalide : " + responseBody,
+                    e
+            );
+        }
+
+        if (!json.has("access_token")) {
+            throw new IOException(
+                    "Aucun access token reçu depuis Supabase."
+            );
+        }
+
+        if (!json.has("user") || json.isNull("user")) {
+            throw new IOException(
+                    "Aucun utilisateur reçu depuis Supabase."
+            );
+        }
+
         return json;
     }
 
-    // ---------------------------------------------------------------
-    // Generic PostgREST helpers
-    // ---------------------------------------------------------------
+    // ============================================================
+    // REST SELECT
+    // ============================================================
 
-    /** GET {baseUrl}/rest/v1/{table}?{query}  e.g. query = "select=*&status=eq.OPEN" */
-    public JSONArray select(String table, String query) throws IOException, InterruptedException {
-        String url = baseUrl + "/rest/v1/" + table + (query == null || query.isEmpty() ? "" : "?" + query);
-        HttpRequest req = restRequestBuilder(url)
+    public JSONArray select(String table, String query)
+            throws IOException, InterruptedException {
+
+        if (table == null || table.isBlank()) {
+            throw new IllegalArgumentException("Table name is required.");
+        }
+
+        String url = baseUrl + "/rest/v1/" + table;
+
+        if (query != null && !query.isBlank()) {
+            url += "?" + query;
+        }
+
+        HttpRequest request = restRequestBuilder(url)
                 .GET()
                 .build();
-        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-        checkError(resp);
-        String body = resp.body();
-        return body.isBlank() ? new JSONArray() : new JSONArray(body);
+
+        HttpResponse<String> response =
+                http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(
+                "Supabase SELECT [" + table + "] status: "
+                        + response.statusCode()
+        );
+
+        System.out.println(
+                "Supabase SELECT response: "
+                        + response.body()
+        );
+
+        checkError(response);
+
+        String body = response.body();
+
+        if (body == null || body.isBlank()) {
+            return new JSONArray();
+        }
+
+        try {
+            return new JSONArray(body);
+        } catch (Exception e) {
+            throw new IOException(
+                    "Réponse SELECT invalide : " + body,
+                    e
+            );
+        }
     }
 
-    /** POST (insert) a row; returns the inserted row(s). */
-    public JSONArray insert(String table, JSONObject row) throws IOException, InterruptedException {
-        HttpRequest req = restRequestBuilder(baseUrl + "/rest/v1/" + table)
+    // ============================================================
+    // INSERT
+    // ============================================================
+
+    public JSONArray insert(String table, JSONObject row)
+            throws IOException, InterruptedException {
+
+        String url = baseUrl + "/rest/v1/" + table;
+
+        HttpRequest request = restRequestBuilder(url)
                 .header("Prefer", "return=representation")
-                .POST(HttpRequest.BodyPublishers.ofString(row.toString()))
+                .POST(
+                        HttpRequest.BodyPublishers.ofString(
+                                row.toString()
+                        )
+                )
                 .build();
-        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-        checkError(resp);
-        return new JSONArray(resp.body());
+
+        HttpResponse<String> response =
+                http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        checkError(response);
+
+        if (response.body() == null || response.body().isBlank()) {
+            return new JSONArray();
+        }
+
+        return new JSONArray(response.body());
     }
 
-    /** PATCH (update) rows matching query; returns the updated row(s). */
-    public JSONArray update(String table, String query, JSONObject changes) throws IOException, InterruptedException {
-        String url = baseUrl + "/rest/v1/" + table + "?" + query;
-        HttpRequest req = restRequestBuilder(url)
+    // ============================================================
+    // UPDATE
+    // ============================================================
+
+    public JSONArray update(
+            String table,
+            String query,
+            JSONObject changes
+    ) throws IOException, InterruptedException {
+
+        String url =
+                baseUrl +
+                "/rest/v1/" +
+                table +
+                "?" +
+                query;
+
+        HttpRequest request = restRequestBuilder(url)
                 .header("Prefer", "return=representation")
-                .method("PATCH", HttpRequest.BodyPublishers.ofString(changes.toString()))
+                .method(
+                        "PATCH",
+                        HttpRequest.BodyPublishers.ofString(
+                                changes.toString()
+                        )
+                )
                 .build();
-        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-        checkError(resp);
-        return new JSONArray(resp.body());
+
+        HttpResponse<String> response =
+                http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        checkError(response);
+
+        if (response.body() == null || response.body().isBlank()) {
+            return new JSONArray();
+        }
+
+        return new JSONArray(response.body());
     }
 
-    /** Call a Postgres function exposed via PostgREST RPC (used for atomic, server-enforced operations). */
-    public JSONObject rpc(String functionName, Map<String, Object> params) throws IOException, InterruptedException {
+    // ============================================================
+    // RPC
+    // ============================================================
+
+    public JSONObject rpc(
+            String functionName,
+            Map<String, Object> params
+    ) throws IOException, InterruptedException {
+
+        String url =
+                baseUrl +
+                "/rest/v1/rpc/" +
+                functionName;
+
         JSONObject body = new JSONObject(params);
-        HttpRequest req = restRequestBuilder(baseUrl + "/rest/v1/rpc/" + functionName)
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+
+        HttpRequest request = restRequestBuilder(url)
+                .POST(
+                        HttpRequest.BodyPublishers.ofString(
+                                body.toString()
+                        )
+                )
                 .build();
-        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-        checkError(resp);
-        String respBody = resp.body();
-        if (respBody.isBlank()) return new JSONObject();
-        // RPC may return an array or a single object depending on the function's return type
-        return respBody.trim().startsWith("[")
-                ? new JSONArray(respBody).optJSONObject(0) == null ? new JSONObject() : new JSONArray(respBody).getJSONObject(0)
-                : new JSONObject(respBody);
+
+        HttpResponse<String> response =
+                http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        checkError(response);
+
+        String responseBody = response.body();
+
+        if (responseBody == null || responseBody.isBlank()) {
+            return new JSONObject();
+        }
+
+        responseBody = responseBody.trim();
+
+        if (responseBody.startsWith("[")) {
+
+            JSONArray array = new JSONArray(responseBody);
+
+            if (array.isEmpty()) {
+                return new JSONObject();
+            }
+
+            return array.getJSONObject(0);
+        }
+
+        return new JSONObject(responseBody);
     }
+
+    // ============================================================
+    // REQUEST BUILDER
+    // ============================================================
 
     private HttpRequest.Builder restRequestBuilder(String url) {
-        HttpRequest.Builder b = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("apikey", anonKey)
-                .header("Content-Type", "application/json");
-        if (accessToken != null) {
-            b.header("Authorization", "Bearer " + accessToken);
+
+        HttpRequest.Builder builder =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(15))
+                        .header("apikey", anonKey)
+                        .header("Content-Type", "application/json");
+
+        if (accessToken != null && !accessToken.isBlank()) {
+
+            builder.header(
+                    "Authorization",
+                    "Bearer " + accessToken
+            );
+
         } else {
-            b.header("Authorization", "Bearer " + anonKey);
+
+            builder.header(
+                    "Authorization",
+                    "Bearer " + anonKey
+            );
         }
-        return b;
+
+        return builder;
     }
 
-    private void checkError(HttpResponse<String> resp) throws IOException {
-        if (resp.statusCode() >= 400) {
-            String detail = resp.body();
-            try {
-                JSONObject err = new JSONObject(detail);
-                detail = err.optString("message", detail);
-            } catch (Exception ignored) { /* not JSON, keep raw body */ }
-            throw new IOException("Supabase [" + resp.statusCode() + "]: " + detail);
+    // ============================================================
+    // ERROR HANDLING
+    // ============================================================
+
+    private void checkError(HttpResponse<String> response)
+            throws IOException {
+
+        int status = response.statusCode();
+
+        if (status >= 200 && status < 300) {
+            return;
         }
+
+        String body = response.body();
+
+        String message = extractSupabaseError(body);
+
+        throw new IOException(
+                "Supabase [" +
+                        status +
+                        "]: " +
+                        message
+        );
+    }
+
+    private String extractSupabaseError(String body) {
+
+        if (body == null || body.isBlank()) {
+            return "Erreur inconnue.";
+        }
+
+        try {
+
+            JSONObject json = new JSONObject(body);
+
+            String message =
+                    json.optString("error_description", "");
+
+            if (!message.isBlank()) {
+                return message;
+            }
+
+            message =
+                    json.optString("message", "");
+
+            if (!message.isBlank()) {
+                return message;
+            }
+
+            message =
+                    json.optString("msg", "");
+
+            if (!message.isBlank()) {
+                return message;
+            }
+
+            message =
+                    json.optString("error", "");
+
+            if (!message.isBlank()) {
+                return message;
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return body;
     }
 }

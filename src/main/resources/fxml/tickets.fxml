@@ -1,58 +1,285 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.caisse.controller.TicketController"
-            styleClass="root-pane" prefWidth="800" prefHeight="600">
-
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
-            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
-            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
-            <Label text="TICKETS" styleClass="app-title"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="journeyLabel" styleClass="subtitle"/>
-        </HBox>
-    </top>
+            prefWidth="1200"
+            prefHeight="700"
+            styleClass="root-pane">
 
     <center>
-        <VBox spacing="12">
-            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
 
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <TextField fx:id="codeField" promptText="Scanner / saisir le code produit" onAction="#onAddByCode" HBox.hgrow="ALWAYS"/>
-                <Button text="Rechercher" onAction="#onSearch"/>
-            </HBox>
+        <HBox styleClass="main-layout">
 
-            <ListView fx:id="searchResults" prefHeight="120" visible="false" managed="false"/>
+            <!-- ================================================= -->
+            <!-- LEFT SIDEBAR -->
+            <!-- ================================================= -->
 
-            <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="colCode" text="Code" prefWidth="90"/>
-                    <TableColumn fx:id="colLabel" text="Article" prefWidth="220"/>
-                    <TableColumn fx:id="colQty" text="Qté" prefWidth="70"/>
-                    <TableColumn fx:id="colPrice" text="Prix unitaire" prefWidth="110"/>
-                    <TableColumn fx:id="colDiscount" text="Remise %" prefWidth="90"/>
-                    <TableColumn fx:id="colTotal" text="Total ligne" prefWidth="110"/>
-                    <TableColumn fx:id="colRemove" text="" prefWidth="80"/>
-                </columns>
-            </TableView>
+            <VBox prefWidth="320"
+                  minWidth="300"
+                  maxWidth="360"
+                  spacing="20"
+                  styleClass="side-menu">
 
-            <HBox alignment="CENTER_RIGHT" spacing="12">
-                <Label text="Total ticket:" styleClass="section-title"/>
-                <Label fx:id="totalLabel" styleClass="section-title"/>
-            </HBox>
+                <padding>
+                    <Insets top="35"
+                            right="30"
+                            bottom="30"
+                            left="30"/>
+                </padding>
 
-            <HBox alignment="CENTER_RIGHT" spacing="12">
-                <Label text="Paiement:"/>
-                <ToggleButton fx:id="cashToggle" text="Espèces" selected="true"/>
-                <ToggleButton fx:id="cardToggle" text="Carte bancaire"/>
-                <Button text="Valider le ticket" styleClass="btn-primary" onAction="#onValidate"/>
-            </HBox>
+                <VBox spacing="8">
 
-            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
-        </VBox>
+                    <Button text="‹  Retour"
+                            prefHeight="65"
+                            maxWidth="Infinity"
+                            styleClass="btn-link"
+                            onAction="#onBack"/>
+
+                    <Label text="TICKETS"
+                           styleClass="menu-title"/>
+
+                    <Label fx:id="journeyLabel"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+                <VBox spacing="15">
+
+                    <Label text="NOUVEAU TICKET"
+                           styleClass="section-title"/>
+
+                    <Label text="Ajoutez les articles au ticket, choisissez le mode de paiement, puis validez."
+                           wrapText="true"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <VBox spacing="8">
+
+                    <Label text="PAIEMENT"
+                           styleClass="section-title"/>
+
+                    <Label text="Sélection obligatoire avant validation"
+                           wrapText="true"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+            </VBox>
+
+
+            <!-- ================================================= -->
+            <!-- RIGHT WORKSPACE -->
+            <!-- ================================================= -->
+
+            <StackPane HBox.hgrow="ALWAYS"
+                       styleClass="workspace">
+
+                <VBox spacing="20">
+
+                    <padding>
+                        <Insets top="35"
+                                right="40"
+                                bottom="35"
+                                left="40"/>
+                    </padding>
+
+
+                    <!-- TITLE -->
+
+                    <VBox spacing="5">
+
+                        <Label text="Nouveau ticket"
+                               styleClass="workspace-title"/>
+
+                        <Label text="Saisissez manuellement le code du produit ou recherchez un article."
+                               styleClass="workspace-subtitle"/>
+
+                    </VBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- PRODUCT ENTRY -->
+                    <!-- ================================================= -->
+
+                    <HBox spacing="15"
+                          alignment="CENTER_LEFT">
+
+                        <TextField fx:id="codeField"
+                                   promptText="Saisir le code produit"
+                                   prefHeight="65"
+                                   HBox.hgrow="ALWAYS"
+                                   onAction="#onAddByCode"/>
+
+                        <Button text="Ajouter"
+                                prefWidth="180"
+                                prefHeight="65"
+                                styleClass="btn-primary"
+                                onAction="#onAddByCode"/>
+
+                        <Button text="Rechercher"
+                                prefWidth="180"
+                                prefHeight="65"
+                                onAction="#onSearch"/>
+
+                    </HBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- SEARCH RESULTS -->
+                    <!-- ================================================= -->
+
+                    <ListView fx:id="searchResults"
+                              prefHeight="140"
+                              visible="false"
+                              managed="false"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- CART -->
+                    <!-- ================================================= -->
+
+                    <TableView fx:id="cartTable"
+                               VBox.vgrow="ALWAYS"
+                               prefHeight="350">
+
+                        <columns>
+
+                            <TableColumn fx:id="colCode"
+                                         text="Code"
+                                         prefWidth="100"/>
+
+                            <TableColumn fx:id="colLabel"
+                                         text="Article"
+                                         prefWidth="280"/>
+
+                            <TableColumn fx:id="colQty"
+                                         text="Qté"
+                                         prefWidth="90"/>
+
+                            <TableColumn fx:id="colPrice"
+                                         text="Prix unitaire"
+                                         prefWidth="130"/>
+
+                            <TableColumn fx:id="colDiscount"
+                                         text="Remise %"
+                                         prefWidth="110"/>
+
+                            <TableColumn fx:id="colTotal"
+                                         text="Total"
+                                         prefWidth="130"/>
+
+                            <TableColumn fx:id="colRemove"
+                                         text=""
+                                         prefWidth="90"/>
+
+                        </columns>
+
+                    </TableView>
+
+
+                    <!-- ================================================= -->
+                    <!-- TOTAL -->
+                    <!-- ================================================= -->
+
+                    <HBox alignment="CENTER_RIGHT"
+                          spacing="15">
+
+                        <Label text="TOTAL TICKET"
+                               styleClass="section-title"/>
+
+                        <Label fx:id="totalLabel"
+                               styleClass="section-title"/>
+
+                    </HBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- PAYMENT -->
+                    <!-- ================================================= -->
+
+                    <HBox spacing="15"
+                          alignment="CENTER_RIGHT">
+
+                        <Label text="Paiement :"
+                               styleClass="section-title"/>
+
+
+                        <!--
+                            ToggleGroup is created and managed
+                            by TicketController.java.
+                            
+                            No payment method is selected by default.
+                        -->
+
+                        <ToggleButton fx:id="cashToggle"
+                                      text="Espèces"
+                                      selected="false"
+                                      prefWidth="160"
+                                      prefHeight="70"/>
+
+
+                        <ToggleButton fx:id="cardToggle"
+                                      text="Carte bancaire"
+                                      selected="false"
+                                      prefWidth="190"
+                                      prefHeight="70"/>
+
+
+                        <!--
+                            Hidden until a payment method
+                            is selected.
+                        -->
+
+                        <Button fx:id="validateButton"
+                                text="VALIDER LE TICKET"
+                                prefWidth="250"
+                                prefHeight="75"
+                                styleClass="btn-primary"
+                                visible="false"
+                                managed="false"
+                                onAction="#onValidate"/>
+
+                    </HBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- LOADING -->
+                    <!-- ================================================= -->
+
+                    <HBox alignment="CENTER_RIGHT">
+
+                        <ProgressIndicator fx:id="progressIndicator"
+                                           visible="false"
+                                           maxHeight="30"
+                                           maxWidth="30"/>
+
+                    </HBox>
+
+                </VBox>
+
+            </StackPane>
+
+        </HBox>
+
     </center>
+
 </BorderPane>

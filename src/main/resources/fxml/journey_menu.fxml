@@ -1,42 +1,221 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.caisse.controller.JourneyMenuController"
-            styleClass="root-pane" prefWidth="560" prefHeight="480">
-
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar">
-            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
-            <Button text="&lt; Retour" styleClass="btn-link" onAction="#onBack"/>
-            <Label text="JOURNÉE" styleClass="app-title"/>
-        </HBox>
-    </top>
+            prefWidth="1200"
+            prefHeight="700"
+            styleClass="root-pane">
 
     <center>
-        <VBox alignment="TOP_CENTER" spacing="18" styleClass="card">
-            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
 
-            <HBox spacing="14" alignment="CENTER">
-                <Button fx:id="openButton" text="Ouvrir Journée" styleClass="btn-primary" prefWidth="200" onAction="#onOpenJourney"/>
-                <Button fx:id="closeButton" text="Fermer Journée" styleClass="btn-danger" prefWidth="200" onAction="#onCloseJourney"/>
-            </HBox>
+        <HBox styleClass="main-layout">
 
-            <Separator/>
+            <!-- ================================================= -->
+            <!-- LEFT NAVIGATION -->
+            <!-- ================================================= -->
 
-            <VBox fx:id="currentJourneyPanel" spacing="8" styleClass="info-panel" managed="false" visible="false">
-                <Label text="Journée en cours" styleClass="section-title"/>
-                <Label fx:id="idLabel"/>
-                <Label fx:id="cashierLabel"/>
-                <Label fx:id="openedLabel"/>
-                <Label fx:id="statusLabel"/>
+            <VBox prefWidth="350"
+                  minWidth="320"
+                  maxWidth="400"
+                  spacing="20"
+                  styleClass="side-menu">
+
+                <padding>
+                    <Insets top="35"
+                            right="30"
+                            bottom="30"
+                            left="30"/>
+                </padding>
+
+                <!-- BACK -->
+
+                <Button text="‹  Retour"
+                        maxWidth="Infinity"
+                        prefHeight="65"
+                        styleClass="btn-link"
+                        onAction="#onBack"/>
+
+
+                <!-- PAGE TITLE -->
+
+                <VBox spacing="8">
+
+                    <Label text="JOURNÉE"
+                           styleClass="menu-title"/>
+
+                    <Label text="Gestion de la journée de caisse"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+
+                <!-- STATUS -->
+
+                <VBox spacing="8"
+                      styleClass="side-status">
+
+                    <Label text="STATUT"
+                           styleClass="section-title"/>
+
+                    <Label fx:id="statusLabel"
+                           styleClass="journey-status"/>
+
+                </VBox>
+
             </VBox>
 
-            <Label fx:id="emptyLabel" text="Aucune journée en cours." styleClass="subtitle"/>
 
-            <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
-        </VBox>
+            <!-- ================================================= -->
+            <!-- RIGHT WORKSPACE -->
+            <!-- ================================================= -->
+
+            <StackPane HBox.hgrow="ALWAYS"
+                       styleClass="workspace">
+
+                <VBox spacing="30"
+                      alignment="TOP_CENTER"
+                      maxWidth="850">
+
+                    <padding>
+                        <Insets top="50"
+                                right="60"
+                                bottom="50"
+                                left="60"/>
+                    </padding>
+
+
+                    <!-- HEADER -->
+
+                    <VBox spacing="8"
+                          alignment="CENTER">
+
+                        <Label text="Gestion de la journée"
+                               styleClass="workspace-title"/>
+
+                        <Label text="Ouvrez ou fermez la journée de caisse"
+                               styleClass="workspace-subtitle"/>
+
+                    </VBox>
+
+
+                    <!-- ACTION BUTTONS -->
+
+                    <HBox spacing="25"
+                          alignment="CENTER"
+                          fillHeight="true">
+
+                        <Button fx:id="openButton"
+                                text="OUVRIR&#10;JOURNÉE"
+                                prefWidth="330"
+                                prefHeight="150"
+                                styleClass="btn-primary"
+                                onAction="#onOpenJourney"/>
+
+                        <Button fx:id="closeButton"
+                                text="FERMER&#10;JOURNÉE"
+                                prefWidth="330"
+                                prefHeight="150"
+                                styleClass="btn-danger"
+                                onAction="#onCloseJourney"/>
+
+                    </HBox>
+
+
+                    <!-- SEPARATOR -->
+
+                    <Separator maxWidth="700"/>
+
+
+                    <!-- CURRENT JOURNEY -->
+
+                    <VBox fx:id="currentJourneyPanel"
+                          spacing="18"
+                          maxWidth="700"
+                          styleClass="journey-card"
+                          managed="false"
+                          visible="false">
+
+                        <Label text="Journée en cours"
+                               styleClass="section-title"/>
+
+
+                        <VBox spacing="12">
+
+                            <HBox spacing="10">
+                                <Label text="Identifiant :"
+                                       styleClass="info-label"/>
+
+                                <Label fx:id="idLabel"
+                                       styleClass="info-value"/>
+                            </HBox>
+
+
+                            <HBox spacing="10">
+                                <Label text="Caissier :"
+                                       styleClass="info-label"/>
+
+                                <Label fx:id="cashierLabel"
+                                       styleClass="info-value"/>
+                            </HBox>
+
+
+                            <HBox spacing="10">
+                                <Label text="Ouverture :"
+                                       styleClass="info-label"/>
+
+                                <Label fx:id="openedLabel"
+                                       styleClass="info-value"/>
+                            </HBox>
+
+
+                            <HBox spacing="10">
+                                <Label text="Statut :"
+                                       styleClass="info-label"/>
+
+                                <Label fx:id="statusLabel"
+                                       styleClass="info-value"/>
+                            </HBox>
+
+                        </VBox>
+
+                    </VBox>
+
+
+                    <!-- EMPTY STATE -->
+
+                    <Label fx:id="emptyLabel"
+                           text="Aucune journée en cours."
+                           styleClass="empty-state"/>
+
+
+                    <!-- LOADING -->
+
+                    <ProgressIndicator fx:id="progressIndicator"
+                                       visible="false"
+                                       maxHeight="35"
+                                       maxWidth="35"/>
+
+                </VBox>
+
+            </StackPane>
+
+        </HBox>
+
     </center>
+
 </BorderPane>
