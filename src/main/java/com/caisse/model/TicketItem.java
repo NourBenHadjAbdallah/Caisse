@@ -16,12 +16,29 @@ public class TicketItem {
     }
 
     public Product getProduct() { return product; }
+
     public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public BigDecimal getDiscountPercent() { return discountPercent; }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    // ADD THIS
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getDiscountPercent() {
+        return discountPercent;
+    }
 
     public BigDecimal lineTotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity)).setScale(3, java.math.RoundingMode.HALF_UP);
+        return unitPrice
+                .multiply(BigDecimal.valueOf(quantity))
+                .setScale(3, java.math.RoundingMode.HALF_UP);
     }
 }

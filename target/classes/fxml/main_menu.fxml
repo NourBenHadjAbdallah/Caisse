@@ -16,9 +16,11 @@
             prefHeight="700"
             styleClass="root-pane">
 
+
     <center>
 
         <HBox styleClass="main-layout">
+
 
             <!-- ================================================= -->
             <!-- LEFT MENU -->
@@ -37,15 +39,20 @@
                             left="30"/>
                 </padding>
 
-                <!-- MENU TITLE -->
 
-                <VBox spacing="5">
+                <!-- ================================================= -->
+                <!-- HEADER -->
+                <!-- ================================================= -->
+
+                <VBox spacing="8">
 
                     <Label text="MENU"
                            styleClass="menu-title"/>
 
+
                     <Label fx:id="cashierLabel"
                            styleClass="cashier-label"/>
+
 
                     <Label fx:id="journeyBadge"
                            styleClass="badge"/>
@@ -53,16 +60,30 @@
                 </VBox>
 
 
-                <!-- MENU BUTTONS -->
+                <!-- ================================================= -->
+                <!-- MAIN MENU BUTTONS -->
+                <!-- ================================================= -->
 
-                <VBox spacing="15"
-                      VBox.vgrow="NEVER">
+                <VBox spacing="15">
+
+
+                    <!-- JOURNEY -->
 
                     <Button text="Journée"
                             maxWidth="Infinity"
                             prefHeight="75"
                             styleClass="btn-menu"
                             onAction="#onJourney"/>
+
+
+                    <!-- TICKETS -->
+
+                    <!--
+                        Always visible.
+
+                        Disabled automatically when
+                        no journey is open.
+                    -->
 
                     <Button fx:id="ticketsButton"
                             text="Tickets"
@@ -71,6 +92,9 @@
                             styleClass="btn-menu"
                             onAction="#onTickets"/>
 
+
+                    <!-- RETURNS -->
+
                     <Button fx:id="returnsButton"
                             text="Retours"
                             maxWidth="Infinity"
@@ -78,11 +102,17 @@
                             styleClass="btn-menu"
                             onAction="#onReturns"/>
 
+
+                    <!-- STOCK -->
+
                     <Button text="Stock"
                             maxWidth="Infinity"
                             prefHeight="75"
                             styleClass="btn-menu"
                             onAction="#onStock"/>
+
+
+                    <!-- REPORTS -->
 
                     <Button text="Rapports"
                             maxWidth="Infinity"
@@ -93,12 +123,16 @@
                 </VBox>
 
 
-                <!-- PUSH LOGOUT TO BOTTOM -->
+                <!-- ================================================= -->
+                <!-- SPACE -->
+                <!-- ================================================= -->
 
                 <Region VBox.vgrow="ALWAYS"/>
 
 
+                <!-- ================================================= -->
                 <!-- LOGOUT -->
+                <!-- ================================================= -->
 
                 <Button text="Déconnexion"
                         maxWidth="Infinity"
@@ -121,6 +155,7 @@
 
                     <Label text="Bienvenue"
                            styleClass="workspace-title"/>
+
 
                     <Label text="Sélectionnez une option dans le menu"
                            styleClass="workspace-subtitle"/>

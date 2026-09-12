@@ -14,15 +14,28 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.util.Callback;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+
 
 public class TicketController {
 
     // =========================================================
-    // FXML FIELDS
+    // FXML
     // =========================================================
 
     @FXML
@@ -78,8 +91,11 @@ public class TicketController {
     // SERVICES
     // =========================================================
 
-    private final ProductService productService = new ProductService();
-    private final TicketService ticketService = new TicketService();
+    private final ProductService productService =
+            new ProductService();
+
+    private final TicketService ticketService =
+            new TicketService();
 
 
     // =========================================================
@@ -105,16 +121,15 @@ public class TicketController {
     @FXML
     public void initialize() {
 
-        /*
-         * Defense in depth:
-         * A ticket cannot be created if there is no open journey.
-         */
+        // -----------------------------------------------------
+        // JOURNEY CHECK
+        // -----------------------------------------------------
+
         if (!AppState.getInstance().hasOpenJourney()) {
 
             AlertUtil.error(
                     "Aucune journée ouverte",
-                    "Aucune journée n'est ouverte.\n\n"
-                            + "Veuillez ouvrir une journée avant de créer un ticket."
+                    "Veuillez ouvrir une journée avant de créer un ticket."
             );
 
             SceneManager.show(
@@ -126,191 +141,571 @@ public class TicketController {
         }
 
 
-        // =====================================================
-        // JOURNEY
-        // =====================================================
+        // -----------------------------------------------------
+        // JOURNEY LABEL
+        // -----------------------------------------------------
 
-        if (AppState.getInstance().getCurrentJourney() != null) {
-
-            journeyLabel.setText(
-                    "Journée : "
-                            + AppState.getInstance()
-                            .getCurrentJourney()
-                            .getId()
-            );
-
-        } else {
-
-            journeyLabel.setText("Journée ouverte");
-
-        }
+        journeyLabel.setText(
+                "Journée : "
+                        + AppState.getInstance()
+                        .getCurrentJourney()
+                        .getId()
+        );
 
 
-        // =====================================================
-        // PAYMENT SETUP
-        // =====================================================
+        // -----------------------------------------------------
+        // PAYMENT
+        // -----------------------------------------------------
 
         cashToggle.setToggleGroup(paymentGroup);
         cardToggle.setToggleGroup(paymentGroup);
 
-        /*
-         * IMPORTANT:
-         * No payment method is selected by default.
-         */
         paymentGroup.selectToggle(null);
 
-        /*
-         * Validation button is hidden until
-         * the cashier chooses a payment method.
-         */
-        validateButton.setVisible(false);
-        validateButton.setManaged(false);
+        cashToggle.setSelected(false);
+        cardToggle.setSelected(false);
+
+        validateButton.setDisable(true);
 
 
         /*
-         * Listen for payment selection.
+         * Enable validation only when a payment method
+         * has been selected.
          */
-        paymentGroup.selectedToggleProperty().addListener(
-                (observable, oldToggle, newToggle) -> {
+        paymentGroup.selectedToggleProperty()
+                .addListener(
+                        (observable, oldToggle, newToggle) -> {
 
-                    boolean paymentSelected =
-                            newToggle != null;
-
-                    validateButton.setVisible(paymentSelected);
-                    validateButton.setManaged(paymentSelected);
-                }
-        );
+                            validateButton.setDisable(
+                                    newToggle == null
+                            );
+                        }
+                );
 
 
-        // =====================================================
-        // CART TABLE
-        // =====================================================
+        // -----------------------------------------------------
+        // TABLE
+        // -----------------------------------------------------
 
         cartTable.setItems(cart);
 
+        cartTable.setEditable(true);
+
+
+        // -----------------------------------------------------
+        // CODE
+        // -----------------------------------------------------
 
         colCode.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        cell.getValue()
-                                .getProduct()
-                                .getCode()
-                )
+                cell ->
+                        new SimpleStringProperty(
+                                cell.getValue()
+                                        .getProduct()
+                                        .getCode()
+                        )
         );
 
+
+        // -----------------------------------------------------
+        // LABEL
+        // -----------------------------------------------------
 
         colLabel.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        cell.getValue()
-                                .getProduct()
-                                .getLabel()
-                )
+                cell ->
+                        new SimpleStringProperty(
+                                cell.getValue()
+                                        .getProduct()
+                                        .getLabel()
+                        )
         );
 
+
+        // -----------------------------------------------------
+        // QUANTITY
+        // -----------------------------------------------------
 
         colQty.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        String.valueOf(
-                                cell.getValue().getQuantity()
+                cell ->
+                        new SimpleStringProperty(
+                                String.valueOf(
+                                        cell.getValue()
+                                                .getQuantity()
+                                )
                         )
-                )
         );
 
+
+        /*
+         * Quantity becomes editable.
+         */
+        colQty.setCellFactory(
+                column ->
+                        new TableCell<>() {
+
+                            private final TextField textField =
+                                    new TextField();
+
+
+                            @Override
+                            public void startEdit() {
+
+                                if (isEmpty()) {
+                                    return;
+                                }
+
+                                super.startEdit();
+
+                                textField.setText(
+                                        String.valueOf(
+                                                getItem()
+                                        )
+                                );
+
+                                setGraphic(textField);
+
+                                setText(null);
+
+                                textField.selectAll();
+
+                                textField.requestFocus();
+
+                                textField.setOnAction(
+                                        event ->
+                                                commitEdit(
+                                                        textField.getText()
+                                                )
+                                );
+
+                                textField.focusedProperty()
+                                        .addListener(
+                                                (obs, oldValue, focused) -> {
+
+                                                    if (!focused &&
+                                                            isEditing()) {
+
+                                                        commitEdit(
+                                                                textField.getText()
+                                                        );
+                                                    }
+                                                }
+                                        );
+                            }
+
+
+                            @Override
+                            public void cancelEdit() {
+
+                                super.cancelEdit();
+
+                                setText(
+                                        String.valueOf(
+                                                getItem()
+                                        )
+                                );
+
+                                setGraphic(null);
+                            }
+
+
+                            @Override
+                            public void updateItem(
+                                    String item,
+                                    boolean empty
+                            ) {
+
+                                super.updateItem(
+                                        item,
+                                        empty
+                                );
+
+                                if (empty) {
+
+                                    setText(null);
+                                    setGraphic(null);
+
+                                } else if (isEditing()) {
+
+                                    textField.setText(item);
+
+                                    setText(null);
+
+                                    setGraphic(textField);
+
+                                } else {
+
+                                    setText(item);
+
+                                    setGraphic(null);
+                                }
+                            }
+                        }
+        );
+
+
+        /*
+         * When quantity editing finishes,
+         * update TicketItem.
+         */
+        colQty.setOnEditCommit(event -> {
+
+            TicketItem item =
+                    event.getRowValue();
+
+            String value =
+                    event.getNewValue();
+
+
+            try {
+
+                int quantity =
+                        Integer.parseInt(
+                                value.trim()
+                        );
+
+
+                if (quantity <= 0) {
+
+                    AlertUtil.error(
+                            "Quantité invalide",
+                            "La quantité doit être supérieure à 0."
+                    );
+
+                    cartTable.refresh();
+
+                    return;
+                }
+
+
+                int availableStock =
+                        item.getProduct()
+                                .getStockQuantity();
+
+
+                if (quantity > availableStock) {
+
+                    AlertUtil.error(
+                            "Stock insuffisant",
+                            "Stock disponible : "
+                                    + availableStock
+                    );
+
+                    cartTable.refresh();
+
+                    return;
+                }
+
+
+                item.setQuantity(quantity);
+
+                cartTable.refresh();
+
+                updateTotal();
+
+            } catch (NumberFormatException e) {
+
+                AlertUtil.error(
+                        "Quantité invalide",
+                        "Veuillez saisir un nombre entier."
+                );
+
+                cartTable.refresh();
+            }
+        });
+
+
+        // -----------------------------------------------------
+        // PRICE
+        // -----------------------------------------------------
 
         colPrice.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        money(
-                                cell.getValue()
-                                        .getUnitPrice()
+                cell ->
+                        new SimpleStringProperty(
+                                money(
+                                        cell.getValue()
+                                                .getUnitPrice()
+                                )
                         )
-                )
         );
 
+
+        /*
+         * Price becomes editable.
+         */
+        colPrice.setCellFactory(
+                column ->
+                        new TableCell<>() {
+
+                            private final TextField textField =
+                                    new TextField();
+
+
+                            @Override
+                            public void startEdit() {
+
+                                if (isEmpty()) {
+                                    return;
+                                }
+
+                                super.startEdit();
+
+
+                                textField.setText(
+                                        getItem()
+                                );
+
+
+                                setGraphic(textField);
+
+                                setText(null);
+
+                                textField.selectAll();
+
+                                textField.requestFocus();
+
+
+                                textField.setOnAction(
+                                        event ->
+                                                commitEdit(
+                                                        textField.getText()
+                                                )
+                                );
+
+
+                                textField.focusedProperty()
+                                        .addListener(
+                                                (obs, oldValue, focused) -> {
+
+                                                    if (!focused &&
+                                                            isEditing()) {
+
+                                                        commitEdit(
+                                                                textField.getText()
+                                                        );
+                                                    }
+                                                }
+                                        );
+                            }
+
+
+                            @Override
+                            public void cancelEdit() {
+
+                                super.cancelEdit();
+
+                                setText(
+                                        getItem()
+                                );
+
+                                setGraphic(null);
+                            }
+
+
+                            @Override
+                            public void updateItem(
+                                    String item,
+                                    boolean empty
+                            ) {
+
+                                super.updateItem(
+                                        item,
+                                        empty
+                                );
+
+
+                                if (empty) {
+
+                                    setText(null);
+                                    setGraphic(null);
+
+                                } else if (isEditing()) {
+
+                                    textField.setText(item);
+
+                                    setText(null);
+
+                                    setGraphic(textField);
+
+                                } else {
+
+                                    setText(item);
+
+                                    setGraphic(null);
+                                }
+                            }
+                        }
+        );
+
+
+        /*
+         * When price editing finishes,
+         * update TicketItem.
+         */
+        colPrice.setOnEditCommit(event -> {
+
+            TicketItem item =
+                    event.getRowValue();
+
+            String value =
+                    event.getNewValue();
+
+
+            try {
+
+                /*
+                 * Remove DT if user typed it.
+                 */
+                String cleanValue =
+                        value
+                                .replace("DT", "")
+                                .trim()
+                                .replace(",", ".");
+
+
+                BigDecimal price =
+                        new BigDecimal(
+                                cleanValue
+                        );
+
+
+                if (price.compareTo(
+                        BigDecimal.ZERO
+                ) < 0) {
+
+                    AlertUtil.error(
+                            "Prix invalide",
+                            "Le prix ne peut pas être négatif."
+                    );
+
+                    cartTable.refresh();
+
+                    return;
+                }
+
+
+                item.setUnitPrice(price);
+
+                cartTable.refresh();
+
+                updateTotal();
+
+            } catch (NumberFormatException e) {
+
+                AlertUtil.error(
+                        "Prix invalide",
+                        "Veuillez saisir un prix valide."
+                );
+
+                cartTable.refresh();
+            }
+        });
+
+
+        // -----------------------------------------------------
+        // DISCOUNT
+        // -----------------------------------------------------
 
         colDiscount.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        cell.getValue()
-                                .getDiscountPercent()
-                                + " %"
-                )
+                cell ->
+                        new SimpleStringProperty(
+                                cell.getValue()
+                                        .getDiscountPercent()
+                                        + " %"
+                        )
         );
 
+
+        // -----------------------------------------------------
+        // TOTAL
+        // -----------------------------------------------------
 
         colTotal.setCellValueFactory(
-                cell -> new SimpleStringProperty(
-                        money(
-                                cell.getValue().lineTotal()
+                cell ->
+                        new SimpleStringProperty(
+                                money(
+                                        cell.getValue()
+                                                .lineTotal()
+                                )
                         )
-                )
         );
 
+
+        // -----------------------------------------------------
+        // REMOVE
+        // -----------------------------------------------------
 
         addRemoveButtonColumn();
 
 
-        // =====================================================
-        // SEARCH RESULTS
-        // =====================================================
+        // -----------------------------------------------------
+        // SEARCH
+        // -----------------------------------------------------
 
         searchResults.setCellFactory(
-                listView -> new ListCell<>() {
+                listView ->
+                        new ListCell<>() {
 
-                    @Override
-                    protected void updateItem(
-                            Product product,
-                            boolean empty
-                    ) {
+                            @Override
+                            protected void updateItem(
+                                    Product product,
+                                    boolean empty
+                            ) {
 
-                        super.updateItem(product, empty);
+                                super.updateItem(
+                                        product,
+                                        empty
+                                );
 
-                        if (empty || product == null) {
 
-                            setText(null);
+                                if (empty ||
+                                        product == null) {
 
-                        } else {
+                                    setText(null);
 
-                            setText(
-                                    product.getCode()
-                                            + " — "
-                                            + product.getLabel()
-                                            + " (stock: "
-                                            + product.getStockQuantity()
-                                            + ", "
-                                            + money(product.finalPrice())
-                                            + ")"
-                            );
+                                } else {
+
+                                    setText(
+                                            product.getCode()
+                                                    + " — "
+                                                    + product.getLabel()
+                                                    + " (stock: "
+                                                    + product.getStockQuantity()
+                                                    + ", "
+                                                    + money(
+                                                            product.finalPrice()
+                                                    )
+                                                    + ")"
+                                    );
+                                }
+                            }
                         }
+        );
+
+
+        searchResults.setOnMouseClicked(
+                event -> {
+
+                    Product selected =
+                            searchResults
+                                    .getSelectionModel()
+                                    .getSelectedItem();
+
+
+                    if (selected != null) {
+
+                        addToCart(selected);
                     }
                 }
         );
 
 
-        /*
-         * Clicking a search result adds it to the cart.
-         */
-        searchResults.setOnMouseClicked(event -> {
-
-            Product selected =
-                    searchResults
-                            .getSelectionModel()
-                            .getSelectedItem();
-
-            if (selected != null) {
-
-                addToCart(selected);
-            }
-        });
-
-
-        // =====================================================
-        // INITIAL STATE
-        // =====================================================
-
         updateTotal();
+
+        codeField.requestFocus();
     }
 
 
     // =========================================================
-    // ADD PRODUCT BY CODE
+    // ADD BY CODE
     // =========================================================
 
     @FXML
@@ -327,55 +722,63 @@ public class TicketController {
         }
 
 
-        Task<Product> task = new Task<>() {
+        Task<Product> task =
+                new Task<>() {
 
-            @Override
-            protected Product call() throws Exception {
+                    @Override
+                    protected Product call()
+                            throws Exception {
 
-                return productService.findByCode(code);
-            }
-        };
-
-
-        task.setOnSucceeded(event -> {
-
-            Product product =
-                    task.getValue();
+                        return productService
+                                .findByCode(code);
+                    }
+                };
 
 
-            if (product == null) {
+        task.setOnSucceeded(
+                event -> {
 
-                AlertUtil.error(
-                        "Produit introuvable",
-                        "Aucun produit avec le code \""
-                                + code
-                                + "\"."
-                );
-
-            } else {
-
-                addToCart(product);
-            }
+                    Product product =
+                            task.getValue();
 
 
-            codeField.clear();
-            codeField.requestFocus();
-        });
+                    if (product == null) {
+
+                        AlertUtil.error(
+                                "Produit introuvable",
+                                "Aucun produit avec le code \""
+                                        + code
+                                        + "\"."
+                        );
+
+                    } else {
+
+                        addToCart(product);
+                    }
 
 
-        task.setOnFailed(event -> {
+                    codeField.clear();
 
-            Throwable exception =
-                    task.getException();
+                    codeField.requestFocus();
+                }
+        );
 
 
-            AlertUtil.error(
-                    "Erreur",
-                    exception != null
-                            ? exception.getMessage()
-                            : "Recherche échouée."
-            );
-        });
+        task.setOnFailed(
+                event -> {
+
+                    Throwable exception =
+                            task.getException();
+
+
+                    AlertUtil.error(
+                            "Erreur",
+                            exception != null
+                                    ? exception.getMessage()
+                                    : "Recherche échouée."
+                    );
+                }
+        );
 
 
         Thread thread =
@@ -385,12 +788,13 @@ public class TicketController {
                 );
 
         thread.setDaemon(true);
+
         thread.start();
     }
 
 
     // =========================================================
-    // SEARCH PRODUCT
+    // SEARCH
     // =========================================================
 
     @FXML
@@ -419,42 +823,51 @@ public class TicketController {
                 };
 
 
-        task.setOnSucceeded(event -> {
+        task.setOnSucceeded(
+                event -> {
 
-            List<Product> products =
-                    task.getValue();
-
-
-            searchResults.setItems(
-                    FXCollections.observableArrayList(
-                            products
-                    )
-            );
+                    List<Product> products =
+                            task.getValue();
 
 
-            boolean hasResults =
-                    products != null
-                            && !products.isEmpty();
+                    searchResults.setItems(
+                            FXCollections
+                                    .observableArrayList(
+                                            products
+                                    )
+                    );
 
 
-            searchResults.setVisible(hasResults);
-            searchResults.setManaged(hasResults);
-        });
+                    boolean hasResults =
+                            !products.isEmpty();
 
 
-        task.setOnFailed(event -> {
+                    searchResults.setVisible(
+                            hasResults
+                    );
 
-            Throwable exception =
-                    task.getException();
+                    searchResults.setManaged(
+                            hasResults
+                    );
+                }
+        );
 
 
-            AlertUtil.error(
-                    "Erreur",
-                    exception != null
-                            ? exception.getMessage()
-                            : "Recherche échouée."
-            );
-        });
+        task.setOnFailed(
+                event -> {
+
+                    Throwable exception =
+                            task.getException();
+
+
+                    AlertUtil.error(
+                            "Erreur",
+                            exception != null
+                                    ? exception.getMessage()
+                                    : "Recherche échouée."
+                    );
+                }
+        );
 
 
         Thread thread =
@@ -464,12 +877,13 @@ public class TicketController {
                 );
 
         thread.setDaemon(true);
+
         thread.start();
     }
 
 
     // =========================================================
-    // ADD PRODUCT TO CART
+    // ADD TO CART
     // =========================================================
 
     private void addToCart(Product product) {
@@ -487,29 +901,23 @@ public class TicketController {
         }
 
 
-        /*
-         * If the product is already in the cart,
-         * increase its quantity.
-         */
         for (TicketItem item : cart) {
 
             if (item.getProduct()
                     .getId()
                     .equals(product.getId())) {
 
-                /*
-                 * Don't allow quantity to exceed stock.
-                 */
-                if (item.getQuantity()
-                        >= product.getStockQuantity()) {
+                int newQuantity =
+                        item.getQuantity() + 1;
+
+
+                if (newQuantity >
+                        product.getStockQuantity()) {
 
                     AlertUtil.error(
                             "Stock insuffisant",
-                            "La quantité disponible pour \""
-                                    + product.getLabel()
-                                    + "\" est de "
+                            "Stock disponible : "
                                     + product.getStockQuantity()
-                                    + "."
                     );
 
                     return;
@@ -517,11 +925,12 @@ public class TicketController {
 
 
                 item.setQuantity(
-                        item.getQuantity() + 1
+                        newQuantity
                 );
 
 
                 cartTable.refresh();
+
                 updateTotal();
 
                 return;
@@ -529,9 +938,6 @@ public class TicketController {
         }
 
 
-        /*
-         * Product is not already in the cart.
-         */
         cart.add(
                 new TicketItem(
                         product,
@@ -543,74 +949,83 @@ public class TicketController {
         updateTotal();
 
 
-        /*
-         * Hide search results after adding.
-         */
         searchResults.setVisible(false);
+
         searchResults.setManaged(false);
 
 
-        codeField.clear();
         codeField.requestFocus();
     }
 
 
     // =========================================================
-    // REMOVE PRODUCT
+    // REMOVE BUTTON
     // =========================================================
 
     private void addRemoveButtonColumn() {
 
         colRemove.setCellFactory(
-                column -> new TableCell<>() {
+                (Callback<TableColumn<TicketItem, Void>,
+                        TableCell<TicketItem, Void>>)
+                        column -> {
 
-                    private final Button button =
-                            new Button("Retirer");
+                            return new TableCell<>() {
 
-
-                    {
-                        button.setOnAction(event -> {
-
-                            TicketItem item =
-                                    getTableView()
-                                            .getItems()
-                                            .get(getIndex());
+                                private final Button button =
+                                        new Button("Retirer");
 
 
-                            if (item != null) {
+                                {
 
-                                cart.remove(item);
-                                updateTotal();
-                            }
-                        });
-                    }
+                                    button.setOnAction(
+                                            event -> {
 
-
-                    @Override
-                    protected void updateItem(
-                            Void item,
-                            boolean empty
-                    ) {
-
-                        super.updateItem(
-                                item,
-                                empty
-                        );
+                                                TicketItem item =
+                                                        getTableView()
+                                                                .getItems()
+                                                                .get(
+                                                                        getIndex()
+                                                                );
 
 
-                        setGraphic(
-                                empty
-                                        ? null
-                                        : button
-                        );
-                    }
-                }
+                                                cart.remove(item);
+
+
+                                                updateTotal();
+
+
+                                                codeField.requestFocus();
+                                            }
+                                    );
+                                }
+
+
+                                @Override
+                                protected void updateItem(
+                                        Void item,
+                                        boolean empty
+                                ) {
+
+                                    super.updateItem(
+                                            item,
+                                            empty
+                                    );
+
+
+                                    setGraphic(
+                                            empty
+                                                    ? null
+                                                    : button
+                                    );
+                                }
+                            };
+                        }
         );
     }
 
 
     // =========================================================
-    // UPDATE TOTAL
+    // TOTAL
     // =========================================================
 
     private void updateTotal() {
@@ -635,22 +1050,17 @@ public class TicketController {
 
 
     // =========================================================
-    // VALIDATE TICKET
+    // VALIDATE
     // =========================================================
 
     @FXML
     public void onValidate() {
 
-        // =====================================================
-        // CHECK JOURNEY
-        // =====================================================
-
         if (!AppState.getInstance().hasOpenJourney()) {
 
             AlertUtil.error(
                     "Aucune journée ouverte",
-                    "Aucune journée n'est ouverte.\n\n"
-                            + "Veuillez ouvrir une journée avant de créer un ticket."
+                    "Veuillez ouvrir une journée avant de créer un ticket."
             );
 
             SceneManager.show(
@@ -661,10 +1071,6 @@ public class TicketController {
             return;
         }
 
-
-        // =====================================================
-        // CHECK CART
-        // =====================================================
 
         if (cart.isEmpty()) {
 
@@ -677,54 +1083,23 @@ public class TicketController {
         }
 
 
-        // =====================================================
-        // CHECK PAYMENT
-        // =====================================================
-
-        Toggle selectedPayment =
-                paymentGroup.getSelectedToggle();
-
-
-        if (selectedPayment == null) {
+        if (paymentGroup.getSelectedToggle() == null) {
 
             AlertUtil.error(
-                    "Mode de paiement manquant",
-                    "Veuillez choisir le mode de paiement du client."
+                    "Mode de paiement requis",
+                    "Veuillez sélectionner Espèces "
+                            + "ou Carte bancaire."
             );
 
             return;
         }
 
 
-        // =====================================================
-        // DETERMINE PAYMENT METHOD
-        // =====================================================
+        String paymentMethod =
+                cashToggle.isSelected()
+                        ? "CASH"
+                        : "CARD";
 
-        String paymentMethod;
-
-
-        if (selectedPayment == cashToggle) {
-
-            paymentMethod = "CASH";
-
-        } else if (selectedPayment == cardToggle) {
-
-            paymentMethod = "CARD";
-
-        } else {
-
-            AlertUtil.error(
-                    "Mode de paiement invalide",
-                    "Veuillez sélectionner un mode de paiement."
-            );
-
-            return;
-        }
-
-
-        // =====================================================
-        // CREATE TICKET
-        // =====================================================
 
         Ticket ticket =
                 new Ticket();
@@ -749,25 +1124,25 @@ public class TicketController {
         );
 
 
-        ticket.getItems()
-                .addAll(cart);
+        ticket.getItems().addAll(
+                cart
+        );
 
 
-        // =====================================================
-        // LOADING STATE
-        // =====================================================
+        // -----------------------------------------------------
+        // DISABLE UI
+        // -----------------------------------------------------
 
         progressIndicator.setVisible(true);
 
-        validateButton.setDisable(true);
-        cashToggle.setDisable(true);
-        cardToggle.setDisable(true);
         codeField.setDisable(true);
 
+        cashToggle.setDisable(true);
 
-        // =====================================================
-        // SAVE TICKET
-        // =====================================================
+        cardToggle.setDisable(true);
+
+        validateButton.setDisable(true);
+
 
         Task<Ticket> task =
                 new Task<>() {
@@ -776,91 +1151,101 @@ public class TicketController {
                     protected Ticket call()
                             throws Exception {
 
-                        return ticketService.saveTicket(
-                                ticket
-                        );
+                        return ticketService
+                                .saveTicket(ticket);
                     }
                 };
 
 
-        // =====================================================
+        // -----------------------------------------------------
         // SUCCESS
-        // =====================================================
+        // -----------------------------------------------------
 
-        task.setOnSucceeded(event -> {
+        task.setOnSucceeded(
+                event -> {
 
-            progressIndicator.setVisible(false);
-
-            validateButton.setDisable(false);
-            cashToggle.setDisable(false);
-            cardToggle.setDisable(false);
-            codeField.setDisable(false);
+                    progressIndicator.setVisible(false);
 
 
-            AlertUtil.info(
-                    "Ticket validé",
-                    "Ticket enregistré avec succès.\n\n"
-                            + "Total : "
-                            + money(ticket.total())
-                            + "\n"
-                            + "Paiement : "
-                            + paymentLabel(paymentMethod)
-            );
+                    AlertUtil.info(
+                            "Ticket validé",
+                            "Ticket enregistré avec succès.\n\n"
+                                    + "Total : "
+                                    + money(ticket.total())
+                                    + "\n"
+                                    + "Paiement : "
+                                    + ticket.getPaymentMethod()
+                    );
 
 
-            // Clear cart
-            cart.clear();
+                    cart.clear();
 
-            updateTotal();
-
-
-            // =================================================
-            // RESET PAYMENT
-            // =================================================
-
-            paymentGroup.selectToggle(null);
-
-            cashToggle.setSelected(false);
-            cardToggle.setSelected(false);
+                    updateTotal();
 
 
-            /*
-             * Hide validation button again.
-             */
-            validateButton.setVisible(false);
-            validateButton.setManaged(false);
+                    paymentGroup.selectToggle(null);
+
+                    cashToggle.setSelected(false);
+
+                    cardToggle.setSelected(false);
 
 
-            codeField.clear();
-            codeField.requestFocus();
-        });
+                    validateButton.setDisable(true);
 
 
-        // =====================================================
+                    codeField.setDisable(false);
+
+                    cashToggle.setDisable(false);
+
+                    cardToggle.setDisable(false);
+
+
+                    codeField.clear();
+
+                    codeField.requestFocus();
+                }
+        );
+
+
+        // -----------------------------------------------------
         // FAILURE
-        // =====================================================
+        // -----------------------------------------------------
 
-        task.setOnFailed(event -> {
+        task.setOnFailed(
+                event -> {
 
-            progressIndicator.setVisible(false);
-
-            validateButton.setDisable(false);
-            cashToggle.setDisable(false);
-            cardToggle.setDisable(false);
-            codeField.setDisable(false);
+                    progressIndicator.setVisible(false);
 
 
-            Throwable exception =
-                    task.getException();
+                    Throwable exception =
+                            task.getException();
 
 
-            AlertUtil.error(
-                    "Erreur",
-                    exception != null
-                            ? exception.getMessage()
-                            : "Échec de l'enregistrement du ticket."
-            );
-        });
+                    AlertUtil.error(
+                            "Erreur",
+                            exception != null
+                                    ? exception.getMessage()
+                                    : "Échec de l'enregistrement du ticket."
+                    );
+
+
+                    codeField.setDisable(false);
+
+                    cashToggle.setDisable(false);
+
+                    cardToggle.setDisable(false);
+
+
+                    validateButton.setDisable(
+                            paymentGroup
+                                    .getSelectedToggle()
+                                    == null
+                    );
+
+
+                    codeField.requestFocus();
+                }
+        );
 
 
         Thread thread =
@@ -869,9 +1254,23 @@ public class TicketController {
                         "save-ticket"
                 );
 
-
         thread.setDaemon(true);
+
         thread.start();
+    }
+
+
+    // =========================================================
+    // REPORTS
+    // =========================================================
+
+    @FXML
+    public void onReports() {
+
+        SceneManager.show(
+                "/fxml/reports.fxml",
+                "Rapports"
+        );
     }
 
 
@@ -890,27 +1289,7 @@ public class TicketController {
 
 
     // =========================================================
-    // PAYMENT LABEL
-    // =========================================================
-
-    private String paymentLabel(
-            String paymentMethod
-    ) {
-
-        if ("CASH".equals(paymentMethod)) {
-            return "Espèces";
-        }
-
-        if ("CARD".equals(paymentMethod)) {
-            return "Carte bancaire";
-        }
-
-        return paymentMethod;
-    }
-
-
-    // =========================================================
-    // MONEY FORMAT
+    // MONEY
     // =========================================================
 
     private String money(BigDecimal value) {
@@ -923,7 +1302,7 @@ public class TicketController {
         return value
                 .setScale(
                         3,
-                        java.math.RoundingMode.HALF_UP
+                        RoundingMode.HALF_UP
                 )
                 + " DT";
     }

@@ -43,6 +43,9 @@
                             left="30"/>
                 </padding>
 
+
+                <!-- HEADER -->
+
                 <VBox spacing="8">
 
                     <Button text="‹  Retour"
@@ -59,25 +62,41 @@
 
                 </VBox>
 
+
+                <!-- TICKET INFO -->
+
                 <VBox spacing="15">
 
                     <Label text="NOUVEAU TICKET"
                            styleClass="section-title"/>
 
-                    <Label text="Ajoutez les articles au ticket, choisissez le mode de paiement, puis validez."
+                    <Label text="Ajoutez les articles puis modifiez leur quantité ou leur prix directement dans le tableau."
                            wrapText="true"
                            styleClass="subtitle"/>
 
                 </VBox>
 
+
                 <Region VBox.vgrow="ALWAYS"/>
+
+
+                <!-- REPORTS -->
+
+                <Button text="Rapports"
+                        maxWidth="Infinity"
+                        prefHeight="70"
+                        styleClass="btn-secondary"
+                        onAction="#onReports"/>
+
+
+                <!-- PAYMENT INFO -->
 
                 <VBox spacing="8">
 
                     <Label text="PAIEMENT"
                            styleClass="section-title"/>
 
-                    <Label text="Sélection obligatoire avant validation"
+                    <Label text="Choisissez un mode de paiement pour activer la validation."
                            wrapText="true"
                            styleClass="subtitle"/>
 
@@ -103,21 +122,21 @@
                     </padding>
 
 
-                    <!-- TITLE -->
+                    <!-- PAGE TITLE -->
 
                     <VBox spacing="5">
 
                         <Label text="Nouveau ticket"
                                styleClass="workspace-title"/>
 
-                        <Label text="Saisissez manuellement le code du produit ou recherchez un article."
+                        <Label text="Ajoutez les produits manuellement. Un scanner pourra être ajouté plus tard."
                                styleClass="workspace-subtitle"/>
 
                     </VBox>
 
 
                     <!-- ================================================= -->
-                    <!-- PRODUCT ENTRY -->
+                    <!-- PRODUCT INPUT -->
                     <!-- ================================================= -->
 
                     <HBox spacing="15"
@@ -143,9 +162,7 @@
                     </HBox>
 
 
-                    <!-- ================================================= -->
                     <!-- SEARCH RESULTS -->
-                    <!-- ================================================= -->
 
                     <ListView fx:id="searchResults"
                               prefHeight="140"
@@ -154,12 +171,13 @@
 
 
                     <!-- ================================================= -->
-                    <!-- CART -->
+                    <!-- CART TABLE -->
                     <!-- ================================================= -->
 
                     <TableView fx:id="cartTable"
                                VBox.vgrow="ALWAYS"
-                               prefHeight="350">
+                               prefHeight="350"
+                               editable="true">
 
                         <columns>
 
@@ -173,11 +191,11 @@
 
                             <TableColumn fx:id="colQty"
                                          text="Qté"
-                                         prefWidth="90"/>
+                                         prefWidth="100"/>
 
                             <TableColumn fx:id="colPrice"
                                          text="Prix unitaire"
-                                         prefWidth="130"/>
+                                         prefWidth="140"/>
 
                             <TableColumn fx:id="colDiscount"
                                          text="Remise %"
@@ -185,15 +203,21 @@
 
                             <TableColumn fx:id="colTotal"
                                          text="Total"
-                                         prefWidth="130"/>
+                                         prefWidth="140"/>
 
                             <TableColumn fx:id="colRemove"
-                                         text=""
-                                         prefWidth="90"/>
+                                         text="Action"
+                                         prefWidth="120"/>
 
                         </columns>
 
                     </TableView>
+
+
+                    <!-- EDIT HINT -->
+
+                    <Label text="💡 Double-cliquez sur Qté ou Prix unitaire pour modifier."
+                           styleClass="subtitle"/>
 
 
                     <!-- ================================================= -->
@@ -223,13 +247,6 @@
                                styleClass="section-title"/>
 
 
-                        <!--
-                            ToggleGroup is created and managed
-                            by TicketController.java.
-                            
-                            No payment method is selected by default.
-                        -->
-
                         <ToggleButton fx:id="cashToggle"
                                       text="Espèces"
                                       selected="false"
@@ -244,26 +261,20 @@
                                       prefHeight="70"/>
 
 
-                        <!--
-                            Hidden until a payment method
-                            is selected.
-                        -->
+                        <!-- ALWAYS VISIBLE -->
 
                         <Button fx:id="validateButton"
                                 text="VALIDER LE TICKET"
                                 prefWidth="250"
                                 prefHeight="75"
                                 styleClass="btn-primary"
-                                visible="false"
-                                managed="false"
+                                disable="true"
                                 onAction="#onValidate"/>
 
                     </HBox>
 
 
-                    <!-- ================================================= -->
                     <!-- LOADING -->
-                    <!-- ================================================= -->
 
                     <HBox alignment="CENTER_RIGHT">
 

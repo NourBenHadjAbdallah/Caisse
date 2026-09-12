@@ -6,6 +6,7 @@ com\caisse\controller\MainMenuController.class
 com\caisse\controller\TicketController$4.class
 com\caisse\service\ReturnService.class
 com\caisse\config\AppConfig.class
+com\caisse\controller\TicketController$7.class
 com\caisse\service\ProductService.class
 com\caisse\state\AppState.class
 com\caisse\service\TicketService.class
@@ -20,6 +21,7 @@ com\caisse\service\ReportService.class
 com\caisse\model\Journey.class
 com\caisse\model\Product.class
 com\caisse\controller\LoginController$1.class
+com\caisse\controller\TicketController$6.class
 com\caisse\controller\JourneyMenuController.class
 com\caisse\service\SupabaseClient.class
 com\caisse\model\Ticket.class
