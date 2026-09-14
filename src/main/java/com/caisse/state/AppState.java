@@ -1,6 +1,7 @@
 package com.caisse.state;
 
 import com.caisse.model.Journey;
+import com.caisse.model.JourneyClosingResult;
 import com.caisse.model.User;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -20,6 +21,10 @@ public final class AppState {
     private final ObjectProperty<Journey> currentJourney = new SimpleObjectProperty<>();
     private final ObjectProperty<JourneyState> journeyState = new SimpleObjectProperty<>(JourneyState.NO_OPEN_JOURNEY);
 
+    private String selectedTicketId;
+    private Journey ticketXSnapshot;
+    private JourneyClosingResult journeyClosingResult;
+
     private AppState() {}
 
     public ObjectProperty<User> currentUserProperty() { return currentUser; }
@@ -37,6 +42,15 @@ public final class AppState {
     public JourneyState getJourneyState() { return journeyState.get(); }
     public void setJourneyState(JourneyState state) { journeyState.set(state); }
 
+    public String getSelectedTicketId() { return selectedTicketId; }
+    public void setSelectedTicketId(String selectedTicketId) { this.selectedTicketId = selectedTicketId; }
+
+    public Journey getTicketXSnapshot() { return ticketXSnapshot; }
+    public void setTicketXSnapshot(Journey ticketXSnapshot) { this.ticketXSnapshot = ticketXSnapshot; }
+
+    public JourneyClosingResult getJourneyClosingResult() { return journeyClosingResult; }
+    public void setJourneyClosingResult(JourneyClosingResult journeyClosingResult) { this.journeyClosingResult = journeyClosingResult; }
+
     /** Authoritative gate used by every screen before allowing a sale or a return. */
     public boolean hasOpenJourney() {
         return getJourneyState() == JourneyState.OPEN
@@ -48,5 +62,8 @@ public final class AppState {
         currentUser.set(null);
         currentJourney.set(null);
         journeyState.set(JourneyState.NO_OPEN_JOURNEY);
+        selectedTicketId = null;
+        ticketXSnapshot = null;
+        journeyClosingResult = null;
     }
 }

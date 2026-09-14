@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -26,17 +27,17 @@
             <!-- LEFT MENU -->
             <!-- ================================================= -->
 
-            <VBox prefWidth="350"
-                  minWidth="320"
-                  maxWidth="400"
-                  spacing="20"
+            <VBox prefWidth="300"
+                  minWidth="280"
+                  maxWidth="340"
+                  spacing="24"
                   styleClass="side-menu">
 
                 <padding>
                     <Insets top="35"
-                            right="30"
+                            right="24"
                             bottom="30"
-                            left="30"/>
+                            left="24"/>
                 </padding>
 
 
@@ -44,15 +45,13 @@
                 <!-- HEADER -->
                 <!-- ================================================= -->
 
-                <VBox spacing="8">
+                <VBox spacing="6">
 
                     <Label text="MENU"
                            styleClass="menu-title"/>
 
-
                     <Label fx:id="cashierLabel"
                            styleClass="cashier-label"/>
-
 
                     <Label fx:id="journeyBadge"
                            styleClass="badge"/>
@@ -61,63 +60,31 @@
 
 
                 <!-- ================================================= -->
-                <!-- MAIN MENU BUTTONS -->
+                <!-- MAIN NAV LIST (Tickets first) -->
                 <!-- ================================================= -->
 
-                <VBox spacing="15">
-
-
-                    <!-- JOURNEY -->
-
-                    <Button text="Journée"
-                            maxWidth="Infinity"
-                            prefHeight="75"
-                            styleClass="btn-menu"
-                            onAction="#onJourney"/>
-
-
-                    <!-- TICKETS -->
-
-                    <!--
-                        Always visible.
-
-                        Disabled automatically when
-                        no journey is open.
-                    -->
+                <VBox spacing="4">
 
                     <Button fx:id="ticketsButton"
                             text="Tickets"
                             maxWidth="Infinity"
-                            prefHeight="75"
-                            styleClass="btn-menu"
+                            styleClass="nav-link"
                             onAction="#onTickets"/>
-
-
-                    <!-- RETURNS -->
 
                     <Button fx:id="returnsButton"
                             text="Retours"
                             maxWidth="Infinity"
-                            prefHeight="75"
-                            styleClass="btn-menu"
+                            styleClass="nav-link"
                             onAction="#onReturns"/>
-
-
-                    <!-- STOCK -->
 
                     <Button text="Stock"
                             maxWidth="Infinity"
-                            prefHeight="75"
-                            styleClass="btn-menu"
+                            styleClass="nav-link"
                             onAction="#onStock"/>
-
-
-                    <!-- REPORTS -->
 
                     <Button text="Rapports"
                             maxWidth="Infinity"
-                            prefHeight="75"
-                            styleClass="btn-menu"
+                            styleClass="nav-link"
                             onAction="#onReports"/>
 
                 </VBox>
@@ -131,12 +98,54 @@
 
 
                 <!-- ================================================= -->
+                <!-- JOURNEY (bottom, expandable) -->
+                <!-- ================================================= -->
+
+                <VBox spacing="4">
+
+                    <Button fx:id="journeyToggleButton"
+                            text="Journée   ▾"
+                            maxWidth="Infinity"
+                            styleClass="nav-toggle"
+                            onAction="#onToggleJourneyMenu"/>
+
+                    <VBox fx:id="journeySubmenu"
+                          spacing="2"
+                          visible="false"
+                          managed="false"
+                          styleClass="nav-submenu">
+
+                        <Button fx:id="openJourneyButton"
+                                text="Ouvrir la journée"
+                                maxWidth="Infinity"
+                                styleClass="nav-sub-link"
+                                onAction="#onOpenJourneyQuick"/>
+
+                        <Button fx:id="closeJourneyButton"
+                                text="Fermer la journée"
+                                maxWidth="Infinity"
+                                styleClass="nav-sub-link"
+                                onAction="#onCloseJourneyQuick"/>
+
+                    </VBox>
+
+                    <HBox alignment="CENTER_LEFT">
+                        <ProgressIndicator fx:id="journeyProgress"
+                                           visible="false"
+                                           maxHeight="18"
+                                           maxWidth="18"/>
+                    </HBox>
+
+                </VBox>
+
+
+                <!-- ================================================= -->
                 <!-- LOGOUT -->
                 <!-- ================================================= -->
 
                 <Button text="Déconnexion"
                         maxWidth="Infinity"
-                        prefHeight="65"
+                        prefHeight="55"
                         styleClass="btn-secondary"
                         onAction="#onLogout"/>
 

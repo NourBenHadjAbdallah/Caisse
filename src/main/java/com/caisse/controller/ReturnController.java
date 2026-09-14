@@ -65,6 +65,9 @@ public class ReturnController {
             SceneManager.show("/fxml/main_menu.fxml", "Menu principal");
             return;
         }
+
+        originalTicketLabel.setText("Aucun ticket recherché.");
+
         itemsTable.setItems(rows);
         itemsTable.setEditable(true);
 
@@ -103,8 +106,8 @@ public class ReturnController {
                 return;
             }
             currentTicketId = ticket.getString("id");
-            originalTicketLabel.setText("Ticket original: " + currentTicketId + " — Total: " +
-                    money(ticket.optBigDecimal("total", BigDecimal.ZERO)));
+            originalTicketLabel.setText(
+                    "Ticket : " + currentTicketId + "\nTotal : " + money(ticket.optBigDecimal("total", BigDecimal.ZERO)));
             populateRows(ticket.getJSONArray("items"));
         });
         task.setOnFailed(e -> AlertUtil.error("Erreur", task.getException() != null ? task.getException().getMessage() : "Recherche échouée."));
@@ -168,8 +171,9 @@ public class ReturnController {
             AlertUtil.info("Retour enregistré", "Remboursement: " + money(ret.total()));
             rows.clear();
             currentTicketId = null;
-            originalTicketLabel.setText("");
+            originalTicketLabel.setText("Aucun ticket recherché.");
             totalLabel.setText(money(BigDecimal.ZERO));
+            ticketIdField.clear();
         });
         task.setOnFailed(e -> {
             progressIndicator.setVisible(false);

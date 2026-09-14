@@ -47,6 +47,12 @@ public class AuthService {
             );
         }
 
+        String refreshToken =
+                authResponse.optString(
+                        "refresh_token",
+                        ""
+                );
+
         JSONObject authUser =
                 authResponse.optJSONObject("user");
 
@@ -74,11 +80,9 @@ public class AuthService {
                         email
                 );
 
-        System.out.println("=================================");
-        System.out.println("AUTHENTICATION SUCCESS");
-        System.out.println("User ID: " + userId);
-        System.out.println("Email: " + userEmail);
-        System.out.println("=================================");
+        // Deliberately not logging accessToken, refreshToken, or userEmail —
+        // these are sensitive. A generic success marker is enough for support.
+        System.out.println("Authentication succeeded.");
 
         // --------------------------------------------------------
         // 3. Save Supabase session
@@ -86,6 +90,7 @@ public class AuthService {
 
         client.setSession(
                 accessToken,
+                refreshToken,
                 userId
         );
 
@@ -113,10 +118,7 @@ public class AuthService {
                     "Connexion réussie, mais aucun profil " +
                     "caissier n'a été trouvé.\n\n" +
                     "Utilisateur : " +
-                    userEmail +
-                    "\n\n" +
-                    "ID : " +
-                    userId
+                    userEmail
             );
         }
 

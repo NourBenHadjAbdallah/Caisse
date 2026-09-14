@@ -1,8 +1,10 @@
 package com.caisse.controller;
 
+import com.caisse.model.Journey;
 import com.caisse.model.Product;
 import com.caisse.model.Ticket;
 import com.caisse.model.TicketItem;
+import com.caisse.service.JourneyService;
 import com.caisse.service.ProductService;
 import com.caisse.service.TicketService;
 import com.caisse.state.AppState;
@@ -96,6 +98,9 @@ public class TicketController {
 
     private final TicketService ticketService =
             new TicketService();
+
+    private final JourneyService journeyService =
+            new JourneyService();
 
 
     // =========================================================
@@ -976,6 +981,7 @@ public class TicketController {
 
 
                                 {
+                                    button.getStyleClass().add("btn-remove");
 
                                     button.setOnAction(
                                             event -> {
@@ -1271,6 +1277,81 @@ public class TicketController {
                 "/fxml/reports.fxml",
                 "Rapports"
         );
+    }
+
+
+    // =========================================================
+    // CASH DRAWER (no function yet — hardware integration later)
+    // =========================================================
+
+    @FXML
+    public void onOpenDrawer() {
+        // Intentionally left empty for now.
+        // Later: send the "open drawer" command to the receipt printer / cash drawer driver.
+    }
+
+
+    // =========================================================
+    // TICKET HISTORY
+    // =========================================================
+
+    @FXML
+    public void onHistory() {
+
+        SceneManager.show(
+                "/fxml/ticket_history.fxml",
+                "Historique des tickets"
+        );
+    }
+
+
+    // =========================================================
+    // TICKET X (read-only snapshot of the current journey — does not close it)
+    // =========================================================
+
+    @FXML
+    public void onTicketX() {
+
+        if (!AppState.getInstance().hasOpenJourney()) {
+            AlertUtil.error(
+                    "Aucune journée ouverte",
+                    "Le Ticket X nécessite une journée ouverte."
+            );
+            return;
+        }
+
+        Journey current = AppState.getInstance().getCurrentJourney();
+
+        progressIndicator.setVisible(true);
+
+        Task<Journey> task = new Task<>() {
+            @Override
+            protected Journey call() throws Exception {
+                // Recomputes totals from tickets/payments/returns so far,
+                // WITHOUT persisting anything or changing the journey's status.
+                return journeyService.buildSummary(current);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            progressIndicator.setVisible(false);
+            Journey snapshot = task.getValue();
+            AppState.getInstance().setTicketXSnapshot(snapshot);
+            SceneManager.show("/fxml/ticket_x.fxml", "Ticket X");
+        });
+
+        task.setOnFailed(event -> {
+            progressIndicator.setVisible(false);
+            Throwable exception = task.getException();
+            AlertUtil.error(
+                    "Erreur",
+                    exception != null ? exception.getMessage() : "Échec du calcul du Ticket X."
+            );
+        });
+
+        Thread thread = new Thread(task, "ticket-x-snapshot");
+        thread.setDaemon(true);
+        thread.start();
     }
 
 

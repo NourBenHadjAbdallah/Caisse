@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.caisse.controller.TicketHistoryController"
+            prefWidth="1200"
+            prefHeight="700"
+            styleClass="root-pane">
+
+    <center>
+
+        <HBox styleClass="main-layout">
+
+            <!-- ================================================= -->
+            <!-- LEFT SIDEBAR -->
+            <!-- ================================================= -->
+
+            <VBox prefWidth="320"
+                  minWidth="300"
+                  maxWidth="360"
+                  spacing="20"
+                  styleClass="side-menu">
+
+                <padding>
+                    <Insets top="35"
+                            right="30"
+                            bottom="30"
+                            left="30"/>
+                </padding>
+
+
+                <!-- HEADER -->
+
+                <VBox spacing="8">
+
+                    <Button text="‹  Retour"
+                            prefHeight="65"
+                            maxWidth="Infinity"
+                            styleClass="btn-back"
+                            onAction="#onBack"/>
+
+                    <Label text="HISTORIQUE"
+                           styleClass="menu-title"/>
+
+                    <Label text="Consultation des tickets passés"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+
+                <!-- INFO -->
+
+                <VBox spacing="15">
+
+                    <Label text="PÉRIODE"
+                           styleClass="section-title"/>
+
+                    <Label text="Par défaut, seuls les tickets d'aujourd'hui sont affichés. Choisissez une autre période puis cliquez sur Filtrer."
+                           wrapText="true"
+                           styleClass="subtitle"/>
+
+                </VBox>
+
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+
+                <!-- SUMMARY -->
+
+                <VBox spacing="8"
+                      styleClass="side-status">
+
+                    <Label text="RÉSULTAT"
+                           styleClass="section-title"/>
+
+                    <Label fx:id="rangeLabel"
+                           styleClass="journey-status"
+                           wrapText="true"/>
+
+                </VBox>
+
+            </VBox>
+
+
+            <!-- ================================================= -->
+            <!-- RIGHT WORKSPACE -->
+            <!-- ================================================= -->
+
+            <StackPane HBox.hgrow="ALWAYS"
+                       styleClass="workspace">
+
+                <VBox spacing="18">
+
+                    <padding>
+                        <Insets top="35"
+                                right="40"
+                                bottom="35"
+                                left="40"/>
+                    </padding>
+
+
+                    <!-- PAGE TITLE -->
+
+                    <VBox spacing="5">
+
+                        <Label text="Historique des tickets"
+                               styleClass="workspace-title"/>
+
+                        <Label text="Retrouvez, ouvrez et imprimez un ticket déjà validé."
+                               styleClass="workspace-subtitle"/>
+
+                    </VBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- DATE FILTER -->
+                    <!-- ================================================= -->
+
+                    <HBox spacing="15"
+                          alignment="CENTER_LEFT"
+                          styleClass="filter-bar">
+
+                        <Label text="Du"
+                               styleClass="section-title"/>
+
+                        <DatePicker fx:id="fromPicker"
+                                    prefHeight="55"/>
+
+                        <Label text="Au"
+                               styleClass="section-title"/>
+
+                        <DatePicker fx:id="toPicker"
+                                    prefHeight="55"/>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <Button text="Aujourd'hui"
+                                prefWidth="150"
+                                prefHeight="55"
+                                styleClass="btn-secondary"
+                                onAction="#onToday"/>
+
+                        <Button text="Filtrer"
+                                prefWidth="150"
+                                prefHeight="55"
+                                styleClass="btn-primary"
+                                onAction="#onFilter"/>
+
+                    </HBox>
+
+
+                    <!-- ================================================= -->
+                    <!-- TICKETS TABLE -->
+                    <!-- ================================================= -->
+
+                    <TableView fx:id="ticketsTable"
+                               VBox.vgrow="ALWAYS"
+                               prefHeight="420">
+
+                        <columns>
+
+                            <TableColumn fx:id="colDate"
+                                         text="Date"
+                                         prefWidth="220"/>
+
+                            <TableColumn fx:id="colTotal"
+                                         text="Total"
+                                         prefWidth="150"/>
+
+                            <TableColumn fx:id="colPayment"
+                                         text="Paiement"
+                                         prefWidth="150"/>
+
+                            <TableColumn fx:id="colOpen"
+                                         text="Action"
+                                         prefWidth="150"/>
+
+                        </columns>
+
+                    </TableView>
+
+
+                    <!-- LOADING -->
+
+                    <HBox alignment="CENTER_RIGHT">
+
+                        <ProgressIndicator fx:id="progressIndicator"
+                                           visible="false"
+                                           maxHeight="30"
+                                           maxWidth="30"/>
+
+                    </HBox>
+
+                </VBox>
+
+            </StackPane>
+
+        </HBox>
+
+    </center>
+
+</BorderPane>

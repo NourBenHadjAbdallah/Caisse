@@ -39,13 +39,14 @@
                             left="30"/>
                 </padding>
 
-                <!-- BACK -->
 
-                <Button text="‹  Retour"
-                        maxWidth="Infinity"
-                        prefHeight="65"
-                        styleClass="btn-link"
-                        onAction="#onBack"/>
+              <!-- BACK -->
+
+              <Button text="‹  Retour"
+                     maxWidth="Infinity"
+                     prefHeight="65"
+                     styleClass="btn-back"
+                     onAction="#onBack"/>
 
 
                 <!-- PAGE TITLE -->

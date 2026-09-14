@@ -1,30 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.caisse.controller.LoginController"
-           styleClass="root-pane" prefWidth="480" prefHeight="420">
-    <VBox alignment="CENTER" spacing="14" maxWidth="340" styleClass="card">
-        <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+<HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.caisse.controller.LoginController"
+      styleClass="root-pane" prefWidth="1200" prefHeight="700">
 
-        <Label text="CAISSE" styleClass="app-title"/>
-        <Label text="Connexion caissier" styleClass="subtitle"/>
+    <!-- ================================================= -->
+    <!-- LEFT BRAND PANEL (50%) -->
+    <!-- ================================================= -->
 
-        <VBox spacing="6">
-            <Label text="Email"/>
-            <TextField fx:id="emailField" promptText="votre.email@exemple.com"/>
+    <StackPane HBox.hgrow="ALWAYS"
+               styleClass="login-hero">
+
+        <VBox alignment="CENTER"
+              spacing="18"
+              maxWidth="380">
+
+
+            <Label text="CAISSE"
+                   styleClass="login-hero-title"/>
+
+            <Label text="POINT DE VENTE"
+                   styleClass="login-hero-subtitle"/>
+
+            <VBox styleClass="login-hero-divider"
+                  maxWidth="60"
+                  prefHeight="3"/>
+
+            <ImageView fitWidth="580"
+                       preserveRatio="true"
+                       smooth="true">
+                <Image url="@../images/pos_illustration.jpg"/>
+            </ImageView>
+
+
         </VBox>
 
-        <VBox spacing="6">
-            <Label text="Mot de passe"/>
-            <PasswordField fx:id="passwordField" promptText="••••••••" onAction="#onLogin"/>
+    </StackPane>
+
+
+    <!-- ================================================= -->
+    <!-- RIGHT LOGIN FORM (50%) -->
+    <!-- ================================================= -->
+
+    <StackPane HBox.hgrow="ALWAYS"
+               styleClass="login-form-pane">
+
+        <VBox alignment="CENTER"
+              spacing="18"
+              maxWidth="380">
+
+            <padding>
+                <Insets top="45" right="45" bottom="45" left="45"/>
+            </padding>
+
+            <Label text="Connexion caissier"
+                   styleClass="section-title"/>
+
+
+            <VBox spacing="6"
+                  maxWidth="Infinity">
+
+                <Label text="Email"
+                       styleClass="field-label"/>
+
+                <TextField fx:id="emailField"
+                           promptText="votre.email@exemple.com"
+                           prefHeight="52"/>
+
+            </VBox>
+
+            <VBox spacing="6"
+                  maxWidth="Infinity">
+
+                <Label text="Mot de passe"
+                       styleClass="field-label"/>
+
+                <PasswordField fx:id="passwordField"
+                               promptText="••••••••"
+                               prefHeight="52"
+                               onAction="#onLogin"/>
+
+            </VBox>
+
+            <Button text="Se connecter"
+                    defaultButton="true"
+                    maxWidth="Infinity"
+                    prefHeight="58"
+                    styleClass="btn-primary"
+                    onAction="#onLogin"/>
+
+            <Label fx:id="statusLabel"
+                   styleClass="error-text"
+                   wrapText="true"
+                   maxWidth="290"
+                   textAlignment="CENTER"/>
+
+            <ProgressIndicator fx:id="progressIndicator"
+                               visible="false"
+                               maxHeight="26"
+                               maxWidth="26"/>
+
         </VBox>
 
-        <Button text="Se connecter" defaultButton="true" maxWidth="Infinity" styleClass="btn-primary" onAction="#onLogin"/>
+    </StackPane>
 
-        <Label fx:id="statusLabel" styleClass="error-text" wrapText="true"/>
-        <ProgressIndicator fx:id="progressIndicator" visible="false" maxHeight="24" maxWidth="24"/>
-    </VBox>
-</StackPane>
+</HBox>

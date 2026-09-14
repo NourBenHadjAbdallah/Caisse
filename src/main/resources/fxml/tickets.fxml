@@ -48,11 +48,11 @@
 
                 <VBox spacing="8">
 
-                    <Button text="‹  Retour"
-                            prefHeight="65"
-                            maxWidth="Infinity"
-                            styleClass="btn-link"
-                            onAction="#onBack"/>
+              <Button text="‹  Retour"
+                     prefHeight="65"
+                     maxWidth="Infinity"
+                     styleClass="btn-back"
+                     onAction="#onBack"/>
 
                     <Label text="TICKETS"
                            styleClass="menu-title"/>
@@ -89,6 +89,31 @@
                         onAction="#onReports"/>
 
 
+                <!-- CASH DRAWER (placeholder, not wired yet) -->
+
+                <Button text="Ouvrir tiroir"
+                        maxWidth="Infinity"
+                        prefHeight="60"
+                        styleClass="btn-secondary"
+                        onAction="#onOpenDrawer"/>
+
+
+                <!-- TICKET HISTORY -->
+
+                <Button text="Historique des tickets"
+                        maxWidth="Infinity"
+                        prefHeight="60"
+                        styleClass="btn-secondary"
+                        onAction="#onHistory"/>
+
+<!-- TICKET X (read-only mid-journey snapshot) -->
+
+              <Button text="Ticket X"
+                     maxWidth="Infinity"
+                     prefHeight="60"
+                     styleClass="btn-secondary"
+                     onAction="#onTicketX"/>
+                     
                 <!-- PAYMENT INFO -->
 
                 <VBox spacing="8">

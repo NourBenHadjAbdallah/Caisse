@@ -5,9 +5,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProductService {
 
@@ -35,12 +39,22 @@ public class ProductService {
         return out;
     }
 
-    /** delta is negative for a sale, positive for a return. */
+    /**
+     * Adjusts stock atomically via the adjust_stock(uuid, integer) Postgres function
+     * (see sql/migration_security_hardening.sql). This replaces the previous
+     * select-then-update pattern, which had a race condition: two concurrent
+     * sales of the last unit could both read the same stock value and both
+     * succeed, resulting in negative/oversold stock. The database function
+     * performs the increment and the "still non-negative" check as a single
+     * atomic statement, and raises an error if the adjustment would go negative.
+     *
+     * delta is negative for a sale, positive for a return.
+     */
     public void adjustStock(String productId, int delta) throws IOException, InterruptedException {
-        JSONArray rows = client.select("products", "select=stock_quantity&id=eq." + productId);
-        int current = rows.getJSONObject(0).getInt("stock_quantity");
-        JSONObject changes = new JSONObject().put("stock_quantity", current + delta);
-        client.update("products", "id=eq." + productId, changes);
+        client.rpc("adjust_stock", Map.of(
+                "p_product_id", productId,
+                "p_delta", delta
+        ));
     }
 
     private Product fromJson(JSONObject o) {
@@ -54,7 +68,20 @@ public class ProductService {
         return p;
     }
 
+    /**
+     * Properly URL-encodes a search/filter term before it's interpolated into
+     * a PostgREST query string. The previous implementation only replaced
+     * spaces, which left characters meaningful to PostgREST's filter syntax
+     * (",", "(", ")", ".", "*") unescaped — a crafted search term could alter
+     * the intended filter (e.g. break out of the "or=(...)" clause or inject
+     * additional conditions). Full URL-encoding closes that off.
+     */
     private String urlEnc(String s) {
-        return s.replace(" ", "%20");
+        try {
+            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            // UTF-8 is always supported; this branch is unreachable in practice.
+            return s.replace(" ", "%20");
+        }
     }
 }
